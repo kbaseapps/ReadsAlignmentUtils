@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y sysstat
 RUN pip install coverage
 
 # update security libraries in the base image
-RUN pip install cffi --upgrade \
+RUN pip install --upgrade setuptools \
+    && pip install cffi --upgrade \
     && pip install pyopenssl --upgrade \
     && pip install ndg-httpsclient --upgrade \
     && pip install pyasn1 --upgrade \

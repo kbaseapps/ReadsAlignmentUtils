@@ -431,7 +431,6 @@ stored alignment.
 
         bam_files = glob.glob(output_dir + '/*.bam')
 
-        uuid_prefix = uuid_str[:8]
         if len(bam_files) == 0:
             raise ValueError("Alignment object does not contain a bam file")
 
@@ -442,15 +441,15 @@ stored alignment.
                 if self._validate(validate_params) == 1:
                     raise Exception('{0} failed validation'.format(bam_file_path))
 
-            if params.get(self.PARAM_IN_DOWNLOAD_BAI, True):
-                bai_file = uuid_prefix + '_' + file_base + '.bai'
+            if params.get(self.PARAM_IN_DOWNLOAD_BAI, False):
+                bai_file = file_base + '.bai'
                 bai_file_path = os.path.join(output_dir, bai_file)
                 self.samtools.create_bai_from_bam(ifile=file_name, ipath=output_dir, ofile=bai_file)
                 if not os.path.isfile(bai_file_path):
                     raise ValueError('Error creating {}'.format(bai_file_path))
 
             if params.get(self.PARAM_IN_DOWNLOAD_SAM, False):
-                sam_file = uuid_prefix + '_' + file_base + '.sam'
+                sam_file = file_base + '.sam'
                 sam_file_path = os.path.join(output_dir, sam_file)
                 self.samtools.convert_bam_to_sam(ifile=file_name, ipath=output_dir, ofile=sam_file)
                 if not os.path.isfile(sam_file_path):

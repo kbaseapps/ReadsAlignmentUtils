@@ -219,7 +219,10 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
         shutil.copy(os.path.join('data', file_name), genbank_file_path)
         genome_obj = cls.gfu.genbank_to_genome({'file': {'path': genbank_file_path},
                                                 'workspace_name': cls.getWsName(),
-                                                'genome_name': wsobj_name
+                                                'genome_name': wsobj_name,
+                                                'source': 'Ensembl',
+                                                'generate_ids_if_needed': 1,
+                                                'generate_missing_genes': 1
                                                 })
         cls.staged[wsobj_name] = {'info': genome_obj['genome_info'],
                                   'ref': genome_obj['genome_ref']}

@@ -441,19 +441,20 @@ stored alignment.
                 if self._validate(validate_params) == 1:
                     raise Exception('{0} failed validation'.format(bam_file_path))
 
-            if params.get(self.PARAM_IN_DOWNLOAD_BAI, False):
-                bai_file = file_base + '.bai'
-                bai_file_path = os.path.join(output_dir, bai_file)
-                self.samtools.create_bai_from_bam(ifile=file_name, ipath=output_dir, ofile=bai_file)
-                if not os.path.isfile(bai_file_path):
-                    raise ValueError('Error creating {}'.format(bai_file_path))
-
             if params.get(self.PARAM_IN_DOWNLOAD_SAM, False):
                 sam_file = file_base + '.sam'
                 sam_file_path = os.path.join(output_dir, sam_file)
                 self.samtools.convert_bam_to_sam(ifile=file_name, ipath=output_dir, ofile=sam_file)
                 if not os.path.isfile(sam_file_path):
-                    raise ValueError('Error creating {}'.format(sam_file_path))
+                    self.__LOGGER.error('Error creating {}'.format(sam_file_path))
+
+        if params.get(self.PARAM_IN_DOWNLOAD_BAI, False):
+            file_name = 'accepted_hits.bam'
+            bai_file = 'accepted_hits.bai'
+            bai_file_path = os.path.join(output_dir, bai_file)
+            self.samtools.create_bai_from_bam(ifile=file_name, ipath=output_dir, ofile=bai_file)
+            if not os.path.isfile(bai_file_path):
+                raise ValueError('Error creating {}'.format(bai_file_path))
 
         returnVal = {'destination_dir': output_dir,
                      'stats': alignment[0]['data']['alignment_stats']}

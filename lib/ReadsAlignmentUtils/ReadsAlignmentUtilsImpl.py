@@ -212,6 +212,8 @@ stored alignment.
             if flag[-2:] == '11':
                 properly_paired += 1
 
+        infile.close()
+
         mapped_reads_ids_counter = Counter(mapped_reads_ids)
 
         mapped_reads_count = len(list(mapped_reads_ids_counter))

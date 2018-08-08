@@ -9,6 +9,9 @@ import logging
 import zipfile
 import glob
 from datetime import datetime
+import pysam
+import errno
+from collections import Counter
 
 from pprint import pprint
 from pprint import pformat
@@ -188,7 +191,40 @@ stored alignment.
         Gets the aligner stats from BAM file
         """
         path, file = os.path.split(bam_file)
-        return self.samtools.get_stats(file, path)
+
+        self.__LOGGER.info('Start to generate aligner stats')
+        start_time = time.time()
+        unmapped_reads = pysam.view("-f", "4", bam_file).count('\n')
+
+        mapped_reads_str = pysam.view("-F", "4", bam_file).split('\n')
+
+        mapped_reads_ids = Counter([x.split('\t')[0] for x in mapped_reads_str])
+
+        singletons = mapped_reads_ids.values().count(1) - 1
+        properly_paired = mapped_reads_ids.values().count(2)
+        multiple_alignments = len(mapped_reads_ids) - singletons - 1
+
+        mapped_reads = singletons + multiple_alignments
+
+        total_reads = unmapped_reads + mapped_reads
+
+        alignment_rate = round(float(mapped_reads) / total_reads * 100, 3)
+        if alignment_rate > 100:
+                alignment_rate = 100.0
+
+        elapsed_time = time.time() - start_time
+        self.__LOGGER.info('Used: {}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
+
+        stats_data = {
+            "alignment_rate": alignment_rate,
+            "mapped_reads": mapped_reads,
+            "multiple_alignments": multiple_alignments,
+            "properly_paired": properly_paired,
+            "singletons": singletons,
+            "total_reads": total_reads,
+            "unmapped_reads": unmapped_reads
+        }
+        return stats_data
 
     def _validate(self, params):
         samt = SamTools(self.config, self.__LOGGER)

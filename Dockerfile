@@ -58,6 +58,7 @@ RUN cd /opt \
     && ./gradlew shadowJar \
     && ls build/libs
 
+RUN pip install pysam
 # -----------------------------------------
 
 COPY ./ /kb/module

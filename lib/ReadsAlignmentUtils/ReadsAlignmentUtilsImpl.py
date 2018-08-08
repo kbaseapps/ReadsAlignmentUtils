@@ -194,35 +194,46 @@ stored alignment.
 
         self.__LOGGER.info('Start to generate aligner stats')
         start_time = time.time()
-        unmapped_reads = pysam.view("-f", "4", bam_file).count('\n')
 
-        mapped_reads_str = pysam.view("-F", "4", bam_file).split('\n')
+        infile = pysam.AlignmentFile(bam_file, 'r')
 
-        mapped_reads_ids = Counter([x.split('\t')[0] for x in mapped_reads_str])
+        unmapped_reads_ids = []
+        mapped_reads_ids = []
+        for alignment in infile:
+            seg = alignment.to_string().split('\t')
+            reads_id = seg[0]
+            if seg[2] != '*':
+                mapped_reads_ids.append(reads_id)
+            else:
+                unmapped_reads_ids.append(reads_id)
 
-        singletons = mapped_reads_ids.values().count(1) - 1
-        properly_paired = mapped_reads_ids.values().count(2)
-        multiple_alignments = len(mapped_reads_ids) - singletons - 1
+        unmapped_reads_count = len(unmapped_reads_ids)
+        mapped_reads_ids_counter = Counter(mapped_reads_ids)
 
-        mapped_reads = singletons + multiple_alignments
+        singletons = mapped_reads_ids_counter.values().count(1)
+        properly_paired = mapped_reads_ids_counter.values().count(2)
+        multiple_alignments = len(list(mapped_reads_ids_counter)) - singletons
 
-        total_reads = unmapped_reads + mapped_reads
+        mapped_reads_count = singletons + multiple_alignments
 
-        alignment_rate = round(float(mapped_reads) / total_reads * 100, 3)
+        total_reads = unmapped_reads_count + mapped_reads_count
+
+        alignment_rate = round(float(mapped_reads_count) / total_reads * 100, 3)
         if alignment_rate > 100:
                 alignment_rate = 100.0
 
         elapsed_time = time.time() - start_time
+        print 'Used: {}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
         self.__LOGGER.info('Used: {}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
 
         stats_data = {
             "alignment_rate": alignment_rate,
-            "mapped_reads": mapped_reads,
+            "mapped_reads": mapped_reads_count,
             "multiple_alignments": multiple_alignments,
             "properly_paired": properly_paired,
             "singletons": singletons,
             "total_reads": total_reads,
-            "unmapped_reads": unmapped_reads
+            "unmapped_reads": unmapped_reads_count
         }
         return stats_data
 

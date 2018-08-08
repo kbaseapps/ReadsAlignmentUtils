@@ -197,21 +197,24 @@ stored alignment.
 
         infile = pysam.AlignmentFile(bam_file, 'r')
 
-        unmapped_reads_ids = []
         mapped_reads_ids = []
+        properly_paired = 0
+        unmapped_reads_count = 0
         for alignment in infile:
             seg = alignment.to_string().split('\t')
             reads_id = seg[0]
-            if seg[2] != '*':
-                mapped_reads_ids.append(reads_id)
+            flag = "00" + "{0:b}".format(int(seg[1]))
+            if flag[-3] == '1':
+                unmapped_reads_count += 1
             else:
-                unmapped_reads_ids.append(reads_id)
+                mapped_reads_ids.append(reads_id)
 
-        unmapped_reads_count = len(unmapped_reads_ids)
+            if flag[-2:] == '11':
+                properly_paired += 1
+
         mapped_reads_ids_counter = Counter(mapped_reads_ids)
 
         singletons = mapped_reads_ids_counter.values().count(1)
-        properly_paired = mapped_reads_ids_counter.values().count(2)
         multiple_alignments = len(list(mapped_reads_ids_counter)) - singletons
 
         mapped_reads_count = singletons + multiple_alignments
@@ -223,7 +226,6 @@ stored alignment.
                 alignment_rate = 100.0
 
         elapsed_time = time.time() - start_time
-        print 'Used: {}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
         self.__LOGGER.info('Used: {}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
 
         stats_data = {

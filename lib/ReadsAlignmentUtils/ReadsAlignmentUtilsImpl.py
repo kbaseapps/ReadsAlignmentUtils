@@ -214,10 +214,9 @@ stored alignment.
 
         mapped_reads_ids_counter = Counter(mapped_reads_ids)
 
+        mapped_reads_count = len(list(mapped_reads_ids_counter))
         singletons = mapped_reads_ids_counter.values().count(1)
-        multiple_alignments = len(list(mapped_reads_ids_counter)) - singletons
-
-        mapped_reads_count = singletons + multiple_alignments
+        multiple_alignments = mapped_reads_count - singletons
 
         total_reads = unmapped_reads_count + mapped_reads_count
 

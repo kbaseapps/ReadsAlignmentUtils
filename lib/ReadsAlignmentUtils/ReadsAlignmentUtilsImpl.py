@@ -9,6 +9,9 @@ import logging
 import zipfile
 import glob
 from datetime import datetime
+import pysam
+import errno
+from collections import Counter
 
 from pprint import pprint
 from pprint import pformat
@@ -188,7 +191,93 @@ stored alignment.
         Gets the aligner stats from BAM file
         """
         path, file = os.path.split(bam_file)
-        return self.samtools.get_stats(file, path)
+
+        self.__LOGGER.info('Start to generate aligner stats')
+        start_time = time.time()
+
+        infile = pysam.AlignmentFile(bam_file, 'r')
+
+        mapped_reads_ids = []
+        properly_paired = 0
+        unmapped_reads_count = 0
+        paired = False
+        for alignment in infile:
+            seg = alignment.to_string().split('\t')
+            reads_id = seg[0]
+            flag = "0000000" + "{0:b}".format(int(seg[1]))
+
+            if flag[-1] == '1':
+                paired = True
+                unmapped_left_reads_count = 0
+                unmapped_right_reads_count = 0
+                mapped_left_reads_ids = []
+                mapped_right_reads_ids = []
+
+            if paired:  # process paried end sequence
+
+                if flag[-7] == '1':  # first sequence of a pair
+                    if flag[-3] == '1':
+                        unmapped_left_reads_count += 1
+                    else:
+                        mapped_left_reads_ids.append(reads_id)
+
+                if flag[-8] == '1':  # second sequence of a pair
+                    if flag[-3] == '1':
+                        unmapped_right_reads_count += 1
+                    else:
+                        mapped_right_reads_ids.append(reads_id)
+
+                if flag[-2] == '1':
+                    properly_paired += 1
+            else:  # process single end sequence
+                if flag[-3] == '1':
+                    unmapped_reads_count += 1
+                else:
+                    mapped_reads_ids.append(reads_id)
+
+                if flag[-2] == '1':
+                    properly_paired += 1
+
+        infile.close()
+
+        if paired:
+            mapped_reads_ids = mapped_left_reads_ids + mapped_right_reads_ids
+            unmapped_reads_count = (unmapped_left_reads_count + unmapped_right_reads_count) / 2
+
+            mapped_reads_ids_counter = Counter(mapped_reads_ids)
+            mapped_reads_count = len(list(mapped_reads_ids_counter)) / 2
+
+            singletons = mapped_reads_ids_counter.values().count(2)
+            multiple_alignments = mapped_reads_count - singletons
+
+            total_reads = unmapped_reads_count + mapped_reads_count
+
+        else:
+            mapped_reads_ids_counter = Counter(mapped_reads_ids)
+            mapped_reads_count = len(list(mapped_reads_ids_counter))
+
+            singletons = mapped_reads_ids_counter.values().count(1)
+            multiple_alignments = mapped_reads_count - singletons
+
+            total_reads = unmapped_reads_count + mapped_reads_count
+
+        alignment_rate = round(float(mapped_reads_count) / total_reads * 100, 3)
+        if alignment_rate > 100:
+                alignment_rate = 100.0
+
+        elapsed_time = time.time() - start_time
+        self.__LOGGER.info('Used: {}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
+
+        stats_data = {
+            "alignment_rate": alignment_rate,
+            "mapped_reads": mapped_reads_count,
+            "multiple_alignments": multiple_alignments,
+            "properly_paired": properly_paired,
+            "singletons": singletons,
+            "total_reads": total_reads,
+            "unmapped_reads": unmapped_reads_count
+        }
+        return stats_data
 
     def _validate(self, params):
         samt = SamTools(self.config, self.__LOGGER)

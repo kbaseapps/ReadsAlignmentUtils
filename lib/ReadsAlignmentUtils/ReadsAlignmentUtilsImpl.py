@@ -200,27 +200,66 @@ stored alignment.
         mapped_reads_ids = []
         properly_paired = 0
         unmapped_reads_count = 0
+        paired = False
         for alignment in infile:
             seg = alignment.to_string().split('\t')
             reads_id = seg[0]
-            flag = "00" + "{0:b}".format(int(seg[1]))
-            if flag[-3] == '1':
-                unmapped_reads_count += 1
-            else:
-                mapped_reads_ids.append(reads_id)
+            flag = "0000000" + "{0:b}".format(int(seg[1]))
 
-            if flag[-2:] == '11':
-                properly_paired += 1
+            if flag[-1] == '1':
+                paired = True
+                unmapped_left_reads_count = 0
+                unmapped_right_reads_count = 0
+                mapped_left_reads_ids = []
+                mapped_right_reads_ids = []
+
+            if paired:  # process paried end sequence
+
+                if flag[-6] == '1':  # first sequence of a pair
+                    if flag[-3] == '1':
+                        unmapped_left_reads_count += 1
+                    else:
+                        mapped_left_reads_ids.append(reads_id)
+
+                if flag[-7] == '1':  # second sequence of a pair
+                    if flag[-3] == '1':
+                        unmapped_right_reads_count += 1
+                    else:
+                        mapped_right_reads_ids.append(reads_id)
+
+                if flag[-2] == '1':
+                    properly_paired += 1
+            else:  # process single end sequence
+                if flag[-3] == '1':
+                    unmapped_reads_count += 1
+                else:
+                    mapped_reads_ids.append(reads_id)
+
+                if flag[-2] == '1':
+                    properly_paired += 1
 
         infile.close()
 
-        mapped_reads_ids_counter = Counter(mapped_reads_ids)
+        if paired:
+            mapped_reads_ids = mapped_left_reads_ids + mapped_right_reads_ids
+            unmapped_reads_count = (unmapped_left_reads_count + unmapped_right_reads_count) / 2
 
-        mapped_reads_count = len(list(mapped_reads_ids_counter))
-        singletons = mapped_reads_ids_counter.values().count(1)
-        multiple_alignments = mapped_reads_count - singletons
+            mapped_reads_ids_counter = Counter(mapped_reads_ids)
+            mapped_reads_count = len(list(mapped_reads_ids_counter)) / 2
 
-        total_reads = unmapped_reads_count + mapped_reads_count
+            singletons = mapped_reads_ids_counter.values().count(2)
+            multiple_alignments = mapped_reads_count - singletons
+
+            total_reads = unmapped_reads_count + mapped_reads_count
+
+        else:
+            mapped_reads_ids_counter = Counter(mapped_reads_ids)
+            mapped_reads_count = len(list(mapped_reads_ids_counter))
+
+            singletons = mapped_reads_ids_counter.values().count(1)
+            multiple_alignments = mapped_reads_count - singletons
+
+            total_reads = unmapped_reads_count + mapped_reads_count
 
         alignment_rate = round(float(mapped_reads_count) / total_reads * 100, 3)
         if alignment_rate > 100:

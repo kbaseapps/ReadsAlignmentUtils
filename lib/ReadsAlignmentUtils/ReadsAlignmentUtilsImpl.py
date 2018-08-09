@@ -215,13 +215,13 @@ stored alignment.
 
             if paired:  # process paried end sequence
 
-                if flag[-6] == '1':  # first sequence of a pair
+                if flag[-7] == '1':  # first sequence of a pair
                     if flag[-3] == '1':
                         unmapped_left_reads_count += 1
                     else:
                         mapped_left_reads_ids.append(reads_id)
 
-                if flag[-7] == '1':  # second sequence of a pair
+                if flag[-8] == '1':  # second sequence of a pair
                     if flag[-3] == '1':
                         unmapped_right_reads_count += 1
                     else:

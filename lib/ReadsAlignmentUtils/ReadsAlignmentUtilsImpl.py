@@ -261,7 +261,11 @@ stored alignment.
 
             total_reads = unmapped_reads_count + mapped_reads_count
 
-        alignment_rate = round(float(mapped_reads_count) / total_reads * 100, 3)
+        try:
+            alignment_rate = round(float(mapped_reads_count) / total_reads * 100, 3)
+        except ZeroDivisionError:
+            alignment_rate = 0
+
         if alignment_rate > 100:
                 alignment_rate = 100.0
 

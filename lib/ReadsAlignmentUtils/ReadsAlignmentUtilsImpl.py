@@ -197,9 +197,13 @@ stored alignment.
 
         infile = pysam.AlignmentFile(bam_file, 'r')
 
-        mapped_reads_ids = []
         properly_paired = 0
         unmapped_reads_count = 0
+        unmapped_left_reads_count = 0
+        unmapped_right_reads_count = 0
+        mapped_reads_ids = []
+        mapped_left_reads_ids = []
+        mapped_right_reads_ids = []
         paired = False
         for alignment in infile:
             seg = alignment.to_string().split('\t')
@@ -208,10 +212,6 @@ stored alignment.
 
             if flag[-1] == '1':
                 paired = True
-                unmapped_left_reads_count = 0
-                unmapped_right_reads_count = 0
-                mapped_left_reads_ids = []
-                mapped_right_reads_ids = []
 
             if paired:  # process paried end sequence
 
@@ -242,15 +242,17 @@ stored alignment.
 
         if paired:
             mapped_reads_ids = mapped_left_reads_ids + mapped_right_reads_ids
-            unmapped_reads_count = (unmapped_left_reads_count + unmapped_right_reads_count) / 2
+            unmapped_reads_count = unmapped_left_reads_count + unmapped_right_reads_count
 
             mapped_reads_ids_counter = Counter(mapped_reads_ids)
-            mapped_reads_count = len(list(mapped_reads_ids_counter)) / 2
+            mapped_reads_count = len(list(mapped_reads_ids_counter))
 
-            singletons = mapped_reads_ids_counter.values().count(2)
+            singletons = mapped_reads_ids_counter.values().count(1)
             multiple_alignments = mapped_reads_count - singletons
 
             total_reads = unmapped_reads_count + mapped_reads_count
+
+            properly_paired = properly_paired/2
 
         else:
             mapped_reads_ids_counter = Counter(mapped_reads_ids)

@@ -423,6 +423,20 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
                                         self.test_sam_file,
                                         self.test_bai_file)
 
+    def test_get_aligner_stats(self):
+
+        # test_bam_file = os.path.join("data", "accepted_hits.bam")
+        # bam_file = os.path.join(self.scratch, os.path.basename(test_bam_file))
+        # shutil.copy(test_bam_file, bam_file)
+
+        stats_data = self.getImpl()._get_aligner_stats(self.test_bam_file['file_path'])
+
+        self.assertEqual(stats_data.get('total_reads'), 15254)
+        self.assertEqual(stats_data.get('mapped_reads'), 14969)
+        self.assertEqual(stats_data.get('unmapped_reads'), 285)
+        self.assertEqual(stats_data.get('singletons'), 11450)
+        self.assertEqual(stats_data.get('multiple_alignments'), 3519)
+
     # Following test uses object refs from a narrative to test backward compatibility to download
     # already created Alignment objects in RNASeq. comment the next line to run the test
     @unittest.skip("skipped test_download_legacy_alignment_success")

@@ -189,6 +189,52 @@ stored alignment.
     def _get_aligner_stats(self, bam_file):
         """
         Gets the aligner stats from BAM file
+
+        How we compute this stats:
+
+        For each segment (line) in SAM/BAM file:
+            we take the first element as `reads_id`
+                    the second element as `flag`
+
+            if the last bit (0x1) of flag is `1`:
+                we treat this segment as paired end reads
+            otherwise:
+                we treat this segment as single end reads
+
+            For single end reads:
+                if the 3rd last bit (0x8) of flag is `1`:
+                    we increment unmapped_reads_count
+                else:
+                    we treat this `reads_id` as mapped
+
+                for all mapped `reads_ids`"
+                    if it appears only once:
+                        we treat this `reads_id` as `singletons`
+                    else:
+                        we treat this `reads_id` as `multiple_alignments`
+
+                lastly, total_reads = unmapped_reads_count + identical mapped `reads_id`
+
+            For paired end reads:
+                if the 7th last bit (0x40) of flag is `1`:
+                    if the 3rd last bit (0x8) of flag is `1`:
+                        we increment unmapped_left_reads_count
+                    else:
+                        we treat this `reads_id` as mapped
+
+                if the 8th last bit ( 0x80) of flag is `1`:
+                    if the 3rd last bit (0x8) of flag is `1`:
+                        we increment unmapped_right_reads_count
+                    else:
+                        we treat this `reads_id` as mapped
+
+                for all mapped `reads_ids`"
+                    if it appears only once:
+                        we treat this `reads_id` as `singletons`
+                    else:
+                        we treat this `reads_id` as `multiple_alignments`
+
+                lastly, total_reads = unmapped_left_reads_count + unmapped_right_reads_count + identical mapped `reads_id`
         """
         path, file = os.path.split(bam_file)
 
@@ -213,7 +259,7 @@ stored alignment.
             if flag[-1] == '1':
                 paired = True
 
-            if paired:  # process paried end sequence
+            if paired:  # process paired end sequence
 
                 if flag[-7] == '1':  # first sequence of a pair
                     if flag[-3] == '1':

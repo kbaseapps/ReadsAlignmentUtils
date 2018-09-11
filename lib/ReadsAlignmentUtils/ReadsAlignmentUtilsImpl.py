@@ -190,7 +190,7 @@ stored alignment.
         """
         Gets the aligner stats from BAM file
 
-        How we comput this stats:
+        How we compute this stats:
 
         For each segment (line) in SAM/BAM file:
             we take the first element as `reads_id`

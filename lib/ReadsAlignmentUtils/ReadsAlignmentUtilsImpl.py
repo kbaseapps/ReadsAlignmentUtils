@@ -197,7 +197,7 @@ stored alignment.
                     the second element as `flag`
 
             if the last bit (0x1) of flag is `1`:
-                we treat this segment as paried end reads
+                we treat this segment as paired end reads
             otherwise:
                 we treat this segment as single end reads
 
@@ -259,7 +259,7 @@ stored alignment.
             if flag[-1] == '1':
                 paired = True
 
-            if paired:  # process paried end sequence
+            if paired:  # process paired end sequence
 
                 if flag[-7] == '1':  # first sequence of a pair
                     if flag[-3] == '1':

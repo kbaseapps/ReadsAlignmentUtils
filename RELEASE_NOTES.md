@@ -1,4 +1,7 @@
 --Changes__
+### Version 0.3.4
+- Added retry logic to _check_job to address issues with BADSTATUSCODE
+
 ### Version 0.3.1
 - Fixed issue with download directory name. Uses uuid4 to have a unique directory name.
 

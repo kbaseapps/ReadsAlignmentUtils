@@ -1,27 +1,26 @@
 # -*- coding: utf-8 -*-
 #BEGIN_HEADER
+import errno
+import glob
+import logging
 import os
-import sys
 import re
+import sys
 import time
 import uuid
-import logging
 import zipfile
-import glob
-from datetime import datetime
-import pysam
-import errno
 from collections import Counter
-
-from pprint import pprint
 from pprint import pformat
+from pprint import pprint
 
-from core import script_utils
-from DataFileUtil.DataFileUtilClient import DataFileUtil
-from DataFileUtil.baseclient import ServerError as DFUError
+import pysam
+
+from ReadsAlignmentUtils.core import script_utils
 from ReadsAlignmentUtils.core.sam_tools import SamTools
-from Workspace.WorkspaceClient import Workspace
-from Workspace.baseclient import ServerError as WorkspaceError
+from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.WorkspaceClient import Workspace
+from installed_clients.baseclient import ServerError as DFUError
+from installed_clients.baseclient import ServerError as WorkspaceError
 #END_HEADER
 
 

@@ -19,12 +19,11 @@ except:
 
 from pprint import pprint  # noqa: F401
 
-from biokbase.workspace.client import Workspace as workspaceService
-from Workspace.WorkspaceClient import Workspace
-from DataFileUtil.DataFileUtilClient import DataFileUtil
-from ReadsUtils.ReadsUtilsClient import ReadsUtils
-from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
-from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
+from installed_clients.WorkspaceClient import Workspace
+from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.ReadsUtilsClient import ReadsUtils
+from installed_clients.AssemblyUtilClient import AssemblyUtil
+from installed_clients.GenomeFileUtilClient import GenomeFileUtil
 from biokbase.AbstractHandle.Client import AbstractHandle as HandleService  # @UnresolvedImport
 from ReadsAlignmentUtils.ReadsAlignmentUtilsImpl import ReadsAlignmentUtils
 from ReadsAlignmentUtils.ReadsAlignmentUtilsServer import MethodContext
@@ -66,7 +65,7 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
                         'authenticated': 1})
         cls.shockURL = cls.cfg['shock-url']
         cls.wsURL = cls.cfg['workspace-url']
-        cls.wsClient = workspaceService(cls.wsURL)
+        cls.wsClient = Workspace(cls.wsURL)
         cls.ws = Workspace(cls.wsURL, token=cls.token)
         cls.hs = HandleService(url=cls.cfg['handle-service-url'],
                                token=cls.token)

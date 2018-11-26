@@ -9,12 +9,10 @@ import hashlib
 from os import environ
 try:
     from ConfigParser import ConfigParser  # py2
-except BaseException:
+except ImportError:
     from configparser import ConfigParser  # py3
 
-from pprint import pprint  # noqa: F401
-
-from biokbase.workspace.client import Workspace as workspaceService
+from installed_clients.WorkspaceClient import Workspace as workspaceService
 from ReadsAlignmentUtils.ReadsAlignmentUtilsImpl import ReadsAlignmentUtils
 from ReadsAlignmentUtils.ReadsAlignmentUtilsServer import MethodContext
 from ReadsAlignmentUtils.authclient import KBaseAuth as _KBaseAuth

@@ -75,10 +75,9 @@ def runProgram(logger=None,
 
     # Construct shell command
     cmdStr = "%s %s" % (progPath, argStr)
-    print "Executing : " + cmdStr
     if logger is not None:
         logger.info("Executing : " + cmdStr)
-    # if working_dir is None:
+    if working_dir is None:
         logger.info("Executing: " + cmdStr + " on cwd")
     else:
         logger.info("Executing: " + cmdStr + " on " + working_dir)
@@ -97,19 +96,16 @@ def runProgram(logger=None,
     if logger is not None and result is not None and len(result) > 0:
         logger.info(result)
     else:
-        print result
+        print(result)
     if logger is not None and stderr is not None and len(stderr) > 0:
         logger.info(stderr)
     else:
-        print stderr
+        print(stderr)
 
     # Check returncode for success/failure
     if process.returncode != 0:
         raise Exception("Command execution failed  {0}".format(
             "".join(traceback.format_exc())))
-        raise RuntimeError(
-            'Return Code : {0} , result {1} , progName {2}'.format(
-                process.returncode, result, progName))
 
     # Return result
     return {"result": result, "stderr": stderr}

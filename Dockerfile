@@ -1,4 +1,4 @@
-FROM kbase/kbase:sdkbase2.latest
+FROM kbase/sdkbase2:python
 MAINTAINER KBase Developer
 # -----------------------------------------
 # In this section, you can install any system dependencies required
@@ -6,12 +6,15 @@ MAINTAINER KBase Developer
 # install line here, a git checkout to download code, or run any other
 # installation scripts.
 
-RUN apt-get update && apt-get install -y sysstat
+RUN apt-get update \
+    && apt-get install -y sysstat \
+    && apt-get install -y wget \
+    && apt-get install -y g++ \
+    && apt-get install -y libncurses-dev
 
-# Here we install a python coverage tool and an
-# https library that is out of date in the base image.
-
-RUN pip install coverage
+RUN apt-get install -y libz-dev \
+    && apt-get install -y libbz2-dev \
+    && apt-get install -y liblzma-dev
 
 # Install Samtools
 RUN cd /opt \
@@ -30,7 +33,7 @@ RUN \
   echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections \
   && add-apt-repository -y ppa:webupd8team/java \
   && apt-get update \
-  && apt-get install -y oracle-java8-installer \
+  && apt-get install -y --allow-unauthenticated oracle-java8-installer \
   && rm -rf /var/lib/apt/lists/* \
   && rm -rf /var/cache/oracle-jdk8-installer
 

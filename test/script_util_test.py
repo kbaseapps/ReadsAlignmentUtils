@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
-import unittest
 import logging
-import sys
 import os  # noqa: F401
+import sys
 import time
-from ReadsAlignmentUtils.core import script_utils
-
+import unittest
+from configparser import ConfigParser
 from os import environ
-try:
-    from ConfigParser import ConfigParser  # py2
-except ImportError:
-    from configparser import ConfigParser  # py3
 
-from installed_clients.WorkspaceClient import Workspace as workspaceService
+from ReadsAlignmentUtils.authclient import KBaseAuth as _KBaseAuth
+
 from ReadsAlignmentUtils.ReadsAlignmentUtilsImpl import ReadsAlignmentUtils
 from ReadsAlignmentUtils.ReadsAlignmentUtilsServer import MethodContext
-from ReadsAlignmentUtils.authclient import KBaseAuth as _KBaseAuth
+from ReadsAlignmentUtils.core import script_utils
+from installed_clients.WorkspaceClient import Workspace as workspaceService
 
 
 class ScriptUtilsTest(unittest.TestCase):
@@ -67,7 +64,7 @@ class ScriptUtilsTest(unittest.TestCase):
     def test_whereis(self):
         self.assertIsNone(script_utils.whereis('no_such_program'),
                           'wat! there is a commandline program called no_such_program!')
-        self.assertEquals(script_utils.whereis('ls'), '/bin/ls', 'ls program not found in path!')
+        self.assertEqual(script_utils.whereis('ls'), '/bin/ls', 'ls program not found in path!')
 
 if __name__ == '__main__':
       unittest.main()

@@ -8,8 +8,8 @@ service-language:
     python
 
 module-version:
-    0.3.6
+    0.3.7
 
 owners:
-    [umaganapathyswork, arfath, sjyoo, tgu2]
+    [jjeffryes, tgu2]
 

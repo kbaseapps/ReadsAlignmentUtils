@@ -45,9 +45,9 @@ stored alignment.
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.1"
+    VERSION = "0.3.6"
     GIT_URL = "https://github.com/kbaseapps/ReadsAlignmentUtils.git"
-    GIT_COMMIT_HASH = "a807d122b097a4c6713a81d5a82eef335835f77a"
+    GIT_COMMIT_HASH = "75ef2c24694c056dfca71859d6f344ccff7d4725"
 
     #BEGIN_CLASS_HEADER
 
@@ -292,7 +292,7 @@ stored alignment.
             mapped_reads_ids_counter = Counter(mapped_reads_ids)
             mapped_reads_count = len(list(mapped_reads_ids_counter))
 
-            singletons = mapped_reads_ids_counter.values().count(1)
+            singletons = list(mapped_reads_ids_counter.values()).count(1)
             multiple_alignments = mapped_reads_count - singletons
 
             total_reads = unmapped_reads_count + mapped_reads_count
@@ -303,7 +303,7 @@ stored alignment.
             mapped_reads_ids_counter = Counter(mapped_reads_ids)
             mapped_reads_count = len(list(mapped_reads_ids_counter))
 
-            singletons = mapped_reads_ids_counter.values().count(1)
+            singletons = list(mapped_reads_ids_counter.values()).count(1)
             multiple_alignments = mapped_reads_count - singletons
 
             total_reads = unmapped_reads_count + mapped_reads_count
@@ -407,7 +407,43 @@ stored alignment.
 
     def upload_alignment(self, ctx, params):
         """
-        Validates and uploads the reads alignment  *
+        Validates and uploads the reads alignment  
+                How we compute BAM stats:
+                For each segment (line) in SAM/BAM file:
+                    we take the first element as `reads_id`
+                            the second element as `flag`
+                    if the last bit (0x1) of flag is `1`:
+                        we treat this segment as paired end reads
+                    otherwise:
+                        we treat this segment as single end reads
+                    For single end reads:
+                        if the 3rd last bit (0x8) of flag is `1`:
+                            we increment unmapped_reads_count
+                        else:
+                            we treat this `reads_id` as mapped
+                        for all mapped `reads_ids`"
+                            if it appears only once:
+                                we treat this `reads_id` as `singletons`
+                            else:
+                                we treat this `reads_id` as `multiple_alignments`
+                        lastly, total_reads = unmapped_reads_count + identical mapped `reads_id`
+                    For paired end reads:
+                        if the 7th last bit (0x40) of flag is `1`:
+                            if the 3rd last bit (0x8) of flag is `1`:
+                                we increment unmapped_left_reads_count
+                            else:
+                                we treat this `reads_id` as mapped
+                        if the 8th last bit ( 0x80) of flag is `1`:
+                            if the 3rd last bit (0x8) of flag is `1`:
+                                we increment unmapped_right_reads_count
+                            else:
+                                we treat this `reads_id` as mapped
+                        for all mapped `reads_ids`"
+                            if it appears only once:
+                                we treat this `reads_id` as `singletons`
+                            else:
+                                we treat this `reads_id` as `multiple_alignments`
+                        lastly, total_reads = unmapped_left_reads_count + unmapped_right_reads_count + identical mapped `reads_id`
         :param params: instance of type "UploadAlignmentParams" (* Required
            input parameters for uploading a reads alignment string
            destination_ref -  object reference of alignment destination. The
@@ -639,7 +675,7 @@ stored alignment.
             Need to validate or convert files. Use download_alignment
             """
             download_params = {}
-            for key, val in params.iteritems():
+            for key, val in params.items():
                 download_params[key.replace('export', 'download')] = val
 
             download_retVal = self.download_alignment(ctx, download_params)[0]

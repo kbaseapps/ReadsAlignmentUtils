@@ -7,10 +7,7 @@ import time
 import hashlib
 
 from os import environ
-try:
-    from ConfigParser import ConfigParser  # py2
-except ImportError:
-    from configparser import ConfigParser  # py3
+from configparser import ConfigParser
 
 from installed_clients.WorkspaceClient import Workspace as workspaceService
 from ReadsAlignmentUtils.ReadsAlignmentUtilsImpl import ReadsAlignmentUtils
@@ -75,9 +72,9 @@ class SamToolsTest(unittest.TestCase):
                                                 ofile=ofile,
                                                 opath=opath)
 
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         self.assertTrue(os.path.exists(opath + ofile))
-        self.assertEquals(hashlib.md5(open(opath + ofile, 'rb').read()).hexdigest(),
+        self.assertEqual(hashlib.md5(open(opath + ofile, 'rb').read()).hexdigest(),
                           '96c59589b0ed7338ff27de1881cf40b3')
 
     def test_invalid_convert_sam_to_bam(self):
@@ -94,7 +91,7 @@ class SamToolsTest(unittest.TestCase):
                                                 ofile=ofile,
                                                 opath=opath, validate=True)
 
-        self.assertEquals(result, 1)
+        self.assertEqual(result, 1)
 
     def test_valid_convert_bam_to_sam(self):
         opath = '/kb/module/work/'
@@ -110,9 +107,9 @@ class SamToolsTest(unittest.TestCase):
                                          ofile=ofile,
                                          opath=opath)
 
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         self.assertTrue(os.path.exists(opath + ofile))
-        self.assertEquals(hashlib.md5(open(opath + ofile, 'rb').read()).hexdigest(),
+        self.assertEqual(hashlib.md5(open(opath + ofile, 'rb').read()).hexdigest(),
                           'e8fd0e3d115bef90a520c831a0fbf478')
 
     def test_invalid_convert_bam_to_sam(self):
@@ -129,7 +126,7 @@ class SamToolsTest(unittest.TestCase):
                                          ofile=ofile,
                                          opath=opath, validate=True)
 
-        self.assertEquals(result, 1)
+        self.assertEqual(result, 1)
 
     def test_valid_create_bai_from_bam(self):
         opath = '/kb/module/work/'
@@ -145,9 +142,9 @@ class SamToolsTest(unittest.TestCase):
                                           ofile=ofile,
                                           opath=opath)
 
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         self.assertTrue(os.path.exists(opath + ofile))
-        self.assertEquals(hashlib.md5(open(opath + ofile, 'rb').read()).hexdigest(),
+        self.assertEqual(hashlib.md5(open(opath + ofile, 'rb').read()).hexdigest(),
                           '479a05f10c62e47c68501b7551d44593')
 
     def test_invalid_create_bai_from_bam(self):
@@ -164,7 +161,7 @@ class SamToolsTest(unittest.TestCase):
                                           ofile=ofile,
                                           opath=opath, validate=True)
 
-        self.assertEquals(result, 1)
+        self.assertEqual(result, 1)
 
     def test_get_stats(self):
 
@@ -173,10 +170,10 @@ class SamToolsTest(unittest.TestCase):
         stats = samt.get_stats(ifile='accepted_hits.sam',
                                ipath='/kb/module/test/data/samtools')
 
-        self.assertEquals(stats['unmapped_reads'], 285)
-        self.assertEquals(stats['mapped_reads'], 19213)
-        self.assertEquals(stats['singletons'], 0)
-        self.assertEquals(stats['total_reads'], 19498)
+        self.assertEqual(stats['unmapped_reads'], 285)
+        self.assertEqual(stats['mapped_reads'], 19213)
+        self.assertEqual(stats['singletons'], 0)
+        self.assertEqual(stats['total_reads'], 19498)
 
     def test__is_valid(self):
         result = '\n' + \
@@ -198,7 +195,7 @@ class SamToolsTest(unittest.TestCase):
                              ipath='/kb/module/test/data/samtools',
                              ignore=['MISSING_READ_GROUP'])
 
-        self.assertEquals(0, rval)
+        self.assertEqual(0, rval)
 
     def test_invalid_validate(self):
 
@@ -207,7 +204,7 @@ class SamToolsTest(unittest.TestCase):
         rval = samt.validate(ifile='accepted_hits_invalid.sam',
                              ipath='/kb/module/test/data/samtools')
 
-        self.assertEquals(1, rval)
+        self.assertEqual(1, rval)
 
 if __name__ == '__main__':
       unittest.main()

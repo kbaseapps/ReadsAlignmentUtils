@@ -1,9 +1,10 @@
-from script_utils import log as log
-from script_utils import whereis
-from subprocess import Popen, PIPE, call
+import logging
 import os
 import re
-import logging
+from subprocess import Popen, PIPE
+
+from .script_utils import log as log
+from .script_utils import whereis
 
 
 class SamTools:
@@ -171,8 +172,7 @@ class SamTools:
             result, stderr = sort.communicate()  # samtools always returns success
             view.wait()
         except Exception as ex:
-            log('failed to convert {0} to {1}'.format(ifile, ofile) +
-                '. ' + ex.message, logging.ERROR)
+            log(f'failed to convert {ifile} to {ofile}. {str(ex)}', logging.ERROR)
 
         return 0
 
@@ -219,8 +219,7 @@ class SamTools:
                             shell=True, stdin=PIPE, stdout=PIPE, cwd=opath)
             convert.communicate()
         except Exception as ex:
-            log('failed to convert {0} to {1}'.format(ifile, ofile) +
-                '. ' + ex.message, logging.ERROR)
+            log(f'failed to convert {ifile} to {ofile}. {str(ex)}', logging.ERROR)
 
         return 0
 
@@ -269,8 +268,7 @@ class SamTools:
                            shell=True, stdin=PIPE, stdout=PIPE, cwd=opath)
             create.communicate()
         except Exception as ex:
-            log('failed to convert {0} to {1}'.format(ifile, ofile) +
-                '. ' + ex.message, logging.ERROR)
+            log(f'failed to convert {ifile} to {ofile}. {str(ex)}', logging.ERROR)
             return 1
 
         return 0
@@ -297,20 +295,15 @@ class SamTools:
         # get stats
         self._check_prog()
 
-        try:
-            #   samtools flagstat ifile
-            # samtools appears to operates on garbage-in-garbage out policy. i.e.
-            # it does not validate input and always returns True. Hence output
-            # value is not being checked.
-            stats = Popen('samtools flagstat {0}'.format(ifile),
-                          shell=True, stdin=PIPE, stdout=PIPE)
-            stats, stderr = stats.communicate()
+        #   samtools flagstat ifile
+        # samtools appears to operates on garbage-in-garbage out policy. i.e.
+        # it does not validate input and always returns True. Hence output
+        # value is not being checked.
+        stats = Popen('samtools flagstat {0}'.format(ifile),
+                      shell=True, stdin=PIPE, stdout=PIPE)
+        stats, stderr = stats.communicate()
 
-            result = self._extractAlignmentStatsInfo(stats)
-
-        except Exception as ex:
-            log('failed to get stats from {0}'.format(ifile) + '. ' + ex.message, logging.ERROR)
-            # return {} #TODO send back a dictionary with -1 values
+        result = self._extractAlignmentStatsInfo(stats.decode())
 
         return result
 
@@ -333,8 +326,7 @@ class SamTools:
 
         # check if input file exists
         if not os.path.exists(ifile):
-            raise RuntimeError(None,
-                               'Input file does not exist: ' + str(ifile))
+            raise RuntimeError(None, 'Input file does not exist: ' + str(ifile))
 
         try:
             # java -jar picard.jar ValidateSamFile I=ifile MODE=SUMMARY
@@ -345,15 +337,14 @@ class SamTools:
                 shell=True, stdin=PIPE, stdout=PIPE)
             result, stderr = validation.communicate()
 
-            if self._is_valid(result, ignore):
-                log('{0} passed validation'.format(ifile), logging.INFO, self.logger)
+            if self._is_valid(result.decode(), ignore):
+                log(f'{ifile} passed validation', logging.INFO, self.logger)
                 return 0
             else:
-                log('{0} failed validation with errors: {1}'.format(
-                    ifile, result), logging.ERROR, self.logger)
+                log(f'{ifile} failed validation with errors: {result}',
+                    logging.ERROR, self.logger)
                 return 1
 
         except Exception as ex:
-            log('{0} failed validation'.format(ifile) +
-                '. ' + ex.message, logging.ERROR, self.logger)
+            log(f'{ifile} failed validation. {str(ex)}', logging.ERROR, self.logger)
             return 1

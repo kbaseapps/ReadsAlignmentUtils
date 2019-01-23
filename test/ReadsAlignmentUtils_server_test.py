@@ -1,33 +1,29 @@
 # -*- coding: utf-8 -*-
-import unittest
-import os  # noqa: F401
-import time
-import shutil
-import hashlib
-import requests
-import inspect
 import glob
+import hashlib
+import inspect
+import os  # noqa: F401
+import shutil
 import tempfile
-from zipfile import ZipFile
+import time
+import unittest
+from configparser import ConfigParser
 from datetime import datetime
-
 from os import environ
-try:
-    from ConfigParser import ConfigParser  # py2
-except:
-    from configparser import ConfigParser  # py3
-
 from pprint import pprint  # noqa: F401
+from zipfile import ZipFile
 
-from installed_clients.WorkspaceClient import Workspace
-from installed_clients.DataFileUtilClient import DataFileUtil
-from installed_clients.ReadsUtilsClient import ReadsUtils
-from installed_clients.AssemblyUtilClient import AssemblyUtil
-from installed_clients.GenomeFileUtilClient import GenomeFileUtil
-from biokbase.AbstractHandle.Client import AbstractHandle as HandleService  # @UnresolvedImport
+import requests
+
+from ReadsAlignmentUtils.authclient import KBaseAuth as _KBaseAuth
 from ReadsAlignmentUtils.ReadsAlignmentUtilsImpl import ReadsAlignmentUtils
 from ReadsAlignmentUtils.ReadsAlignmentUtilsServer import MethodContext
-from ReadsAlignmentUtils.authclient import KBaseAuth as _KBaseAuth
+from installed_clients.AbstractHandleClient import AbstractHandle as HandleService
+from installed_clients.AssemblyUtilClient import AssemblyUtil
+from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.GenomeFileUtilClient import GenomeFileUtil
+from installed_clients.ReadsUtilsClient import ReadsUtils
+from installed_clients.WorkspaceClient import Workspace
 
 
 def dictmerge(x, y):
@@ -486,22 +482,19 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
             if '.bam' in f:
                 print('BAM file: ' + f)
                 count += 1
-                with open(os.path.join(tempdir, f)) as fl:
-                    md5 = hashlib.md5(fl.read()).hexdigest()
-                    self.assertEqual(md5, expectedBAM.get('md5'))
+                md5 = self.md5(os.path.join(tempdir, f))
+                self.assertEqual(md5, expectedBAM.get('md5'))
             if '.sam' in f:
                 print('SAM file: ' + f)
                 count += 1
-                with open(os.path.join(tempdir, f)) as fl:
-                    md5 = hashlib.md5(fl.read()).hexdigest()
-                    self.assertEqual(md5, expectedSAM.get('md5'))
+                md5 = self.md5(os.path.join(tempdir, f))
+                self.assertEqual(md5, expectedSAM.get('md5'))
             if '.bai' in f:
-                print('BAI file: ' + f)
                 count += 1
-                with open(os.path.join(tempdir, f)) as fl:
-                    md5 = hashlib.md5(fl.read()).hexdigest()
-                    self.assertEqual(md5, expectedBAI.get('md5'))
-        self.assertEquals(count, expected_num_files)
+                print('BAI file: ' + f)
+                md5 = self.md5(os.path.join(tempdir, f))
+                self.assertEqual(md5, expectedBAI.get('md5'))
+        self.assertEqual(count, expected_num_files)
 
     def test_success_export_alignment_bam(self):
 
@@ -530,13 +523,13 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
 
         ret = self.getImpl().validate_alignment(self.ctx, params)[0]
 
-        self.assertEquals(True, ret['validated'])
+        self.assertEqual(True, ret['validated'])
 
         params = {'file_path': '/kb/module/test/data/samtools/accepted_hits.sam'}
 
         ret = self.getImpl().validate_alignment(self.ctx, params)[0]
 
-        self.assertEquals(True, ret['validated'])
+        self.assertEqual(True, ret['validated'])
 
     def test_valid_invalidate_alignment(self):
         params = {'file_path': '/kb/module/test/data/samtools/accepted_hits_invalid.sam',
@@ -545,8 +538,7 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
 
         ret = self.getImpl().validate_alignment(self.ctx, params)[0]
 
-        self.assertEquals(False, ret['validated'])
-
+        self.assertEqual(False, ret['validated'])
 
     def fail_upload_alignment(self, params, error, exception=ValueError, do_startswith=False):
 
@@ -556,12 +548,12 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
         with self.assertRaises(exception) as context:
             self.getImpl().upload_alignment(self.ctx, params)
         if do_startswith:
-            self.assertTrue(str(context.exception.message).startswith(error),
+            self.assertTrue(str(context.exception).startswith(error),
                             "Error message {} does not start with {}".format(
-                                str(context.exception.message),
+                                str(context.exception),
                                 error))
         else:
-            self.assertEqual(error, str(context.exception.message))
+            self.assertEqual(error, str(context.exception))
 
     def test_upload_fail_empty_reads(self):
 

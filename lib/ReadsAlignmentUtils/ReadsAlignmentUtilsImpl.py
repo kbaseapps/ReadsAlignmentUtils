@@ -297,7 +297,7 @@ stored alignment.
 
             total_reads = unmapped_reads_count + mapped_reads_count
 
-            properly_paired = properly_paired/2
+            properly_paired = properly_paired // 2
 
         else:
             mapped_reads_ids_counter = Counter(mapped_reads_ids)
@@ -407,7 +407,7 @@ stored alignment.
 
     def upload_alignment(self, ctx, params):
         """
-        Validates and uploads the reads alignment  
+        Validates and uploads the reads alignment
                 How we compute BAM stats:
                 For each segment (line) in SAM/BAM file:
                     we take the first element as `reads_id`
@@ -647,7 +647,7 @@ stored alignment.
         """
         Wrapper function for use by in-narrative downloaders to download alignments from shock *
         :param params: instance of type "ExportParams" (* Required input
-           parameters for exporting a reads alignment string source_ref - 
+           parameters for exporting a reads alignment string source_ref -
            object reference of alignment source. The object ref is
            'ws_name_or_id/obj_name_or_id' where ws_name_or_id is the
            workspace name or id and obj_name_or_id is the object name or id

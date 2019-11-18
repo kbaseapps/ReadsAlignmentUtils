@@ -93,9 +93,11 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
         if hasattr(cls, 'nodes_to_delete'):
             for node in cls.nodes_to_delete:
                 cls.delete_shock_node(node)
+        #TODO:Fix handle delete. Error is handle not owned by user
         if hasattr(cls, 'handles_to_delete'):
-            cls.hs.delete_handles(cls.hs.ids_to_handles(cls.handles_to_delete))
-            print('Deleted handles ' + str(cls.handles_to_delete))
+            pass
+            #cls.hs.delete_handles(cls.hs.ids_to_handles(cls.handles_to_delete))
+            #print('Deleted handles ' + str(cls.handles_to_delete))
 
     def getWsClient(self):
         return self.wsClient

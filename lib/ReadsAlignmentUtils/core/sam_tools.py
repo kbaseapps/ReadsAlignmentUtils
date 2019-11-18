@@ -331,7 +331,7 @@ class SamTools:
         try:
             # java -jar picard.jar ValidateSamFile I=ifile MODE=SUMMARY
             validation = Popen(
-                '/usr/lib/jvm/java-8-oracle/bin/java -jar '
+                'java -jar '
                 '/opt/picard/build/libs/picard.jar ValidateSamFile I={0} '
                 'MODE=SUMMARY'.format(ifile),
                 shell=True, stdin=PIPE, stdout=PIPE)

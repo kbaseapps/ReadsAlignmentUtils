@@ -242,91 +242,98 @@ stored alignment.
 
         infile = pysam.AlignmentFile(bam_file, 'r')
 
-        properly_paired = 0
+        total_alignment_count = 0
+        mapped_reads_count = 0
         unmapped_reads_count = 0
-        unmapped_left_reads_count = 0
-        unmapped_right_reads_count = 0
-        mapped_reads_ids = []
+        tota_reads_count = 0
+        secondary_alignment_count =0
+        properly_paired = 0
+        alignment_rate = 0
+        multiple_alignments = 0
+        singletons = 0
+
+        secondary_alignment_left_reads_ids = []
+        secondary_alignment_right_reads_ids = []
+        secondary_alignment_single_end_reads_ids = []
+
         mapped_left_reads_ids = []
         mapped_right_reads_ids = []
-        paired = False
-        for alignment in infile:
-            seg = alignment.to_string().split('\t')
-            reads_id = seg[0]
-            flag = "0000000" + "{0:b}".format(int(seg[1]))
+        mapped_single_end_reads_ids = []
 
-            if flag[-1] == '1':
+        both_pair_map_count = 0
+        paired = False
+        pcount = 0
+        for alignment in infile:
+            reads_id = alignment.query_name
+            total_alignment_count += 1
+            if alignment.is_paired:
                 paired = True
 
             if paired:  # process paired end sequence
 
-                if flag[-7] == '1':  # first sequence of a pair
-                    if flag[-3] == '1':
-                        unmapped_left_reads_count += 1
+
+                if alignment.is_read1:  # first sequence of a pair
+                    if alignment.is_unmapped:
+                        unmapped_reads_count += 1
                     else:
                         mapped_left_reads_ids.append(reads_id)
-
-                if flag[-8] == '1':  # second sequence of a pair
-                    if flag[-3] == '1':
-                        unmapped_right_reads_count += 1
+                        if alignment.is_secondary:
+                            secondary_alignment_count += 1
+                            secondary_alignment_left_reads_ids.append(reads_id)
+ 
+                if alignment.is_read2:  # second sequence of a pair
+                    if alignment.is_unmapped:
+                                      unmapped_reads_count += 1
                     else:
                         mapped_right_reads_ids.append(reads_id)
+                        if alignment.is_secondary:
+                            secondary_alignment_count += 1
+                            secondary_alignment_right_reads_ids.append(reads_id)
 
-                if flag[-2] == '1':
-                    properly_paired += 1
-            else:  # process single end sequence
-                if flag[-3] == '1':
+            else: #process single end sequences
+                if alignment.is_unmapped:
                     unmapped_reads_count += 1
                 else:
-                    mapped_reads_ids.append(reads_id)
-
-                if flag[-2] == '1':
-                    properly_paired += 1
+                    mapped_single_end_reads_ids.append(reads_id)
+                    if alignment.is_secondary:
+                        secondary_alignment_count += 1
+                        secondary_alignment_single_end_reads_ids.append(reads_id)
 
         infile.close()
 
-        if paired:
-            mapped_reads_ids = mapped_left_reads_ids + mapped_right_reads_ids
-            unmapped_reads_count = unmapped_left_reads_count + unmapped_right_reads_count
 
-            mapped_reads_ids_counter = Counter(mapped_reads_ids)
-            mapped_reads_count = len(list(mapped_reads_ids_counter))
+        #prepare  summary
+        mapped_left_reads_count = len(set(mapped_left_reads_ids))
+        mapped_right_reads_count = len(set(mapped_right_reads_ids))
+        both_pair_mapcount = len(set(mapped_left_reads_ids) & set(mapped_right_reads_ids))
+        singletons = mapped_left_reads_count + mapped_right_reads_count - both_pair_mapcount*2
 
-            singletons = list(mapped_reads_ids_counter.values()).count(1)
-            multiple_alignments = mapped_reads_count - singletons
+        mapped_reads_count = mapped_left_reads_count + \
+                                 mapped_right_reads_count + \
+                                 len(set(mapped_single_end_reads_ids))
 
-            total_reads = unmapped_reads_count + mapped_reads_count
 
-            properly_paired = properly_paired // 2
+        total_reads_count = mapped_reads_count + unmapped_reads_count
 
-        else:
-            mapped_reads_ids_counter = Counter(mapped_reads_ids)
-            mapped_reads_count = len(list(mapped_reads_ids_counter))
-
-            singletons = list(mapped_reads_ids_counter.values()).count(1)
-            multiple_alignments = mapped_reads_count - singletons
-
-            total_reads = unmapped_reads_count + mapped_reads_count
+        #count for reads that are aligned in multiple places
+        multiple_alignments = len(set(secondary_alignment_left_reads_ids)) + \
+                              len(set(secondary_alignment_right_reads_ids)) + \
+                              len(set(secondary_alignment_single_end_reads_ids))
 
         try:
-            alignment_rate = round(float(mapped_reads_count) / total_reads * 100, 3)
+            alignment_rate = round(float(mapped_reads_count) / total_reads_count * 100, 3)
         except ZeroDivisionError:
             alignment_rate = 0
-
-        if alignment_rate > 100:
-                alignment_rate = 100.0
-
-        elapsed_time = time.time() - start_time
-        self.__LOGGER.info('Used: {}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
 
         stats_data = {
             "alignment_rate": alignment_rate,
             "mapped_reads": mapped_reads_count,
             "multiple_alignments": multiple_alignments,
-            "properly_paired": properly_paired,
             "singletons": singletons,
-            "total_reads": total_reads,
-            "unmapped_reads": unmapped_reads_count
+            "total_reads": total_reads_count,
+            "unmapped_reads": unmapped_reads_count,
+            "secondary_alignments": secondary_alignment_count,
+            "total_alignments": total_alignment_count
         }
         return stats_data
 

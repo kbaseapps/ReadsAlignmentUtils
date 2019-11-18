@@ -190,50 +190,15 @@ stored alignment.
         Gets the aligner stats from BAM file
 
         How we compute this stats:
+        mapped_reads_count = mapped left read count + mapped right read count + mapped single end count
+        unmapped reads count = unmapped left reads count + unmapped right reads count
+        total_reads = mapped reads count + unmapped reads count
+        singleton = Reads with one of the pair mapping (only applicable to paired end reads)
+        multiple_alignment: count of reads aligning at multiple position in the genome
+        total_alignment = all alignments represented in bam file
+        secondary_alignments = all alignments that have is_secondary tag
 
-        For each segment (line) in SAM/BAM file:
-            we take the first element as `reads_id`
-                    the second element as `flag`
-
-            if the last bit (0x1) of flag is `1`:
-                we treat this segment as paired end reads
-            otherwise:
-                we treat this segment as single end reads
-
-            For single end reads:
-                if the 3rd last bit (0x8) of flag is `1`:
-                    we increment unmapped_reads_count
-                else:
-                    we treat this `reads_id` as mapped
-
-                for all mapped `reads_ids`"
-                    if it appears only once:
-                        we treat this `reads_id` as `singletons`
-                    else:
-                        we treat this `reads_id` as `multiple_alignments`
-
-                lastly, total_reads = unmapped_reads_count + identical mapped `reads_id`
-
-            For paired end reads:
-                if the 7th last bit (0x40) of flag is `1`:
-                    if the 3rd last bit (0x8) of flag is `1`:
-                        we increment unmapped_left_reads_count
-                    else:
-                        we treat this `reads_id` as mapped
-
-                if the 8th last bit ( 0x80) of flag is `1`:
-                    if the 3rd last bit (0x8) of flag is `1`:
-                        we increment unmapped_right_reads_count
-                    else:
-                        we treat this `reads_id` as mapped
-
-                for all mapped `reads_ids`"
-                    if it appears only once:
-                        we treat this `reads_id` as `singletons`
-                    else:
-                        we treat this `reads_id` as `multiple_alignments`
-
-                lastly, total_reads = unmapped_left_reads_count + unmapped_right_reads_count + identical mapped `reads_id`
+        
         """
         path, file = os.path.split(bam_file)
 

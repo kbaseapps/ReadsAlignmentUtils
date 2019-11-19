@@ -95,9 +95,8 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
                 cls.delete_shock_node(node)
         #TODO:Fix handle delete. Error is handle not owned by user
         if hasattr(cls, 'handles_to_delete'):
-            pass
-            #cls.hs.delete_handles(cls.hs.ids_to_handles(cls.handles_to_delete))
-            #print('Deleted handles ' + str(cls.handles_to_delete))
+            cls.hs.delete_handles(cls.hs.hids_to_handles(cls.handles_to_delete))
+            print('Deleted handles ' + str(cls.handles_to_delete))
 
     def getWsClient(self):
         return self.wsClient
@@ -614,20 +613,20 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
 
 #TODO: Following tests fail. They test workspace functionality. Either remove them
 # or fix them so that they don't fail
-#    def test_upload_fail_bad_wsname(self):
-#        self.fail_upload_alignment(
-#            dictmerge({
-#                        'destination_ref': '&bad' + '/foo',
-#                        'file_path': 'foo'
-#                          }, self.more_upload_params),
-#            'Illegal character in workspace name &bad: &')
+    def test_upload_fail_bad_wsname(self):
+        self.fail_upload_alignment(
+            dictmerge({
+                        'destination_ref': '&bad' + '/foo',
+                        'file_path': 'foo'
+                          }, self.more_upload_params),
+            "'Illegal character in workspace name &bad: &'")
 
-#    def test_upload_fail_non_existant_wsname(self):
-#        self.fail_upload_alignment(
-#            dictmerge({
-#                        'destination_ref': '1s' + '/foo',
-#                        'file_path': 'bar'
-#                      }, self.more_upload_params),
-#            'No workspace with name 1s exists')
+    def test_upload_fail_non_existant_wsname(self):
+        self.fail_upload_alignment(
+            dictmerge({
+                        'destination_ref': '1s' + '/foo',
+                        'file_path': 'bar'
+                      }, self.more_upload_params),
+            "'No workspace with name 1s exists'")
 
 

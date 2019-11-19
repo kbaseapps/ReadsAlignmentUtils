@@ -9,7 +9,7 @@ import sys
 import time
 import uuid
 import zipfile
-from collections import Counter
+#from collections import Counter
 from pprint import pformat
 from pprint import pprint
 
@@ -197,6 +197,7 @@ stored alignment.
         multiple_alignment: count of reads aligning at multiple position in the genome
         total_alignment = all alignments represented in bam file
         secondary_alignments = all alignments that have is_secondary tag
+        properly_paired = For paired end reads, all reads that map as proper pair
 
         
         """
@@ -208,14 +209,10 @@ stored alignment.
         infile = pysam.AlignmentFile(bam_file, 'r')
 
         total_alignment_count = 0
-        mapped_reads_count = 0
         unmapped_reads_count = 0
-        tota_reads_count = 0
-        secondary_alignment_count =0
+        secondary_alignment_count = 0
         properly_paired = 0
         alignment_rate = 0
-        multiple_alignments = 0
-        singletons = 0
 
         secondary_alignment_left_reads_ids = []
         secondary_alignment_right_reads_ids = []
@@ -225,7 +222,6 @@ stored alignment.
         mapped_right_reads_ids = []
         mapped_single_end_reads_ids = []
 
-        both_pair_map_count = 0
         paired = False
         pcount = 0
         for alignment in infile:
@@ -236,7 +232,6 @@ stored alignment.
 
             if paired:  # process paired end sequence
 
-
                 if alignment.is_read1:  # first sequence of a pair
                     if alignment.is_unmapped:
                         unmapped_reads_count += 1
@@ -245,16 +240,22 @@ stored alignment.
                         if alignment.is_secondary:
                             secondary_alignment_count += 1
                             secondary_alignment_left_reads_ids.append(reads_id)
+                        else:
+                            if alignment.is_proper_pair: #counter increase when proper pair and primary alignment
+                                properly_paired += 1
  
                 if alignment.is_read2:  # second sequence of a pair
                     if alignment.is_unmapped:
-                                      unmapped_reads_count += 1
+                        unmapped_reads_count += 1
                     else:
                         mapped_right_reads_ids.append(reads_id)
                         if alignment.is_secondary:
                             secondary_alignment_count += 1
                             secondary_alignment_right_reads_ids.append(reads_id)
-
+                        else:
+                            if alignment.is_proper_pair: #counter increase when proper pair and primary alignment
+                                properly_paired += 1
+ 
             else: #process single end sequences
                 if alignment.is_unmapped:
                     unmapped_reads_count += 1
@@ -290,16 +291,25 @@ stored alignment.
         except ZeroDivisionError:
             alignment_rate = 0
 
+        elapsed_time = time.time() - start_time
+        self.__LOGGER.info('Used: {}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
+
+
         stats_data = {
             "alignment_rate": alignment_rate,
             "mapped_reads": mapped_reads_count,
             "multiple_alignments": multiple_alignments,
             "singletons": singletons,
             "total_reads": total_reads_count,
-            "unmapped_reads": unmapped_reads_count,
-            "secondary_alignments": secondary_alignment_count,
-            "total_alignments": total_alignment_count
+            "unmapped_reads": unmapped_reads_count
         }
+
+        # Secondary alignment and total alignment for debugging.
+        # Need to update https://ci.kbase.us/#spec/type/KBaseRNASeq.AlignmentStatsResults-5.0 for them to be included
+        self.__LOGGER.info("secondary_alignments " +  str(secondary_alignment_count))
+        self.__LOGGER.info("total_alignments " +  str(total_alignment_count))
+        self.__LOGGER.info(stats_data)
+
         return stats_data
 
     def _validate(self, params):

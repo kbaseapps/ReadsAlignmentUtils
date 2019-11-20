@@ -93,7 +93,6 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
         if hasattr(cls, 'nodes_to_delete'):
             for node in cls.nodes_to_delete:
                 cls.delete_shock_node(node)
-        #TODO:Fix handle delete. Error is handle not owned by user
         if hasattr(cls, 'handles_to_delete'):
             cls.hs.delete_handles(cls.hs.hids_to_handles(cls.handles_to_delete))
             print('Deleted handles ' + str(cls.handles_to_delete))
@@ -611,8 +610,6 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
             'File does not exist: foo')
 
 
-#TODO: Following tests fail. They test workspace functionality. Either remove them
-# or fix them so that they don't fail
     def test_upload_fail_bad_wsname(self):
         self.fail_upload_alignment(
             dictmerge({

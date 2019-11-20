@@ -223,7 +223,6 @@ stored alignment.
         mapped_single_end_reads_ids = []
 
         paired = False
-        pcount = 0
         for alignment in infile:
             reads_id = alignment.query_name
             total_alignment_count += 1
@@ -301,6 +300,7 @@ stored alignment.
             "multiple_alignments": multiple_alignments,
             "singletons": singletons,
             "total_reads": total_reads_count,
+            "properly_paired": properly_paired,
             "unmapped_reads": unmapped_reads_count
         }
 

@@ -94,7 +94,7 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
             for node in cls.nodes_to_delete:
                 cls.delete_shock_node(node)
         if hasattr(cls, 'handles_to_delete'):
-            cls.hs.delete_handles(cls.hs.ids_to_handles(cls.handles_to_delete))
+            cls.hs.delete_handles(cls.hs.hids_to_handles(cls.handles_to_delete))
             print('Deleted handles ' + str(cls.handles_to_delete))
 
     def getWsClient(self):
@@ -429,7 +429,7 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
         self.assertEqual(stats_data.get('total_reads'), 15254)
         self.assertEqual(stats_data.get('mapped_reads'), 14969)
         self.assertEqual(stats_data.get('unmapped_reads'), 285)
-        self.assertEqual(stats_data.get('singletons'), 11450)
+        self.assertEqual(stats_data.get('singletons'), 0)
         self.assertEqual(stats_data.get('multiple_alignments'), 3519)
 
     # Following test uses object refs from a narrative to test backward compatibility to download
@@ -609,13 +609,14 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
             }, self.more_upload_params),
             'File does not exist: foo')
 
+
     def test_upload_fail_bad_wsname(self):
         self.fail_upload_alignment(
             dictmerge({
                         'destination_ref': '&bad' + '/foo',
                         'file_path': 'foo'
                           }, self.more_upload_params),
-            'Illegal character in workspace name &bad: &')
+            "'Illegal character in workspace name &bad: &'")
 
     def test_upload_fail_non_existant_wsname(self):
         self.fail_upload_alignment(
@@ -623,6 +624,6 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
                         'destination_ref': '1s' + '/foo',
                         'file_path': 'bar'
                       }, self.more_upload_params),
-            'No workspace with name 1s exists')
+            "'No workspace with name 1s exists'")
 
 

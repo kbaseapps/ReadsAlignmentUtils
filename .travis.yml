@@ -36,7 +36,6 @@ install:
 - $KBSDK version
 script:
 - $KBSDK validate
-- make test-sdkless
 
 after_success:
 - coveralls

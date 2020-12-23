@@ -121,31 +121,31 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
     @classmethod
     def upload_file_to_shock(cls, file_path):
         """
-        Use HTTP multi-part POST to save a file to a SHOCK instance.
+        Use DataFileUtil.file_to_shock() save a file to a SHOCK instance.
         """
-        header = dict()
-        header["Authorization"] = "Oauth {0}".format(cls.token)
 
         if file_path is None:
             raise Exception("No file given for upload to SHOCK!")
 
-        with open(os.path.abspath(file_path), 'rb') as dataFile:
-            files = {'upload': dataFile}
-            print('POSTing data')
-            response = requests.post(
-                cls.shockURL + '/node', headers=header, files=files,
-                stream=True, allow_redirects=True)
-            print('got response')
+        # copy file to where DFU can see it (can only see scratch)
+        src_file_basename = os.path.basename(file_path)
+        shared_file_path = os.path.join(cls.scratch, src_file_basename)
+        shutil.copy2(file_path, shared_file_path)
 
-        if not response.ok:
-            response.raise_for_status()
+        # Upload files to shock
+        try:
+            shock_info = cls.dfu.file_to_shock({
+                'file_path': shared_file_path,
+                'make_handle': 1
+            })
+        except Exception as e:
+            raise ValueError('Unable to store ' + file_path + str(e))
 
-        result = response.json()
-
-        if result['error']:
-            raise Exception(result['error'][0])
-        else:
-            return result["data"]
+        # remember shock info
+        if not hasattr(cls, 'shock_ids'):
+            cls.shock_ids = []
+        cls.shock_ids.append(shock_info['shock_id'])
+        return shock_info
 
     @classmethod
     def upload_file_to_shock_and_get_handle(cls, test_file):
@@ -156,17 +156,17 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
         print('loading file to shock: ' + test_file)
         node = cls.upload_file_to_shock(test_file)
         pprint(node)
-        cls.nodes_to_delete.append(node['id'])
+        cls.nodes_to_delete.append(node['shock_id'])
 
-        print('creating handle for shock id ' + node['id'])
-        handle_id = cls.hs.persist_handle({'id': node['id'],
+        print('creating handle for shock id ' + node['shock_id'])
+        handle_id = cls.hs.persist_handle({'id': node['shock_id'],
                                            'type': 'shock',
                                            'url': cls.shockURL
                                            })
         cls.handles_to_delete.append(handle_id)
 
-        md5 = node['file']['checksum']['md5']
-        return node['id'], handle_id, md5, node['file']['size']
+        md5 = node['handle']['remote_md5']
+        return node['shock_id'], handle_id, md5, node['size']
 
     @classmethod
     def upload_reads(cls, wsobjname, object_body, fwd_reads,

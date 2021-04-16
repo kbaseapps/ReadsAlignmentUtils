@@ -45,9 +45,9 @@ stored alignment.
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.3.6"
-    GIT_URL = "https://github.com/kbaseapps/ReadsAlignmentUtils.git"
-    GIT_COMMIT_HASH = "75ef2c24694c056dfca71859d6f344ccff7d4725"
+    VERSION = "0.4.0"
+    GIT_URL = "git@github.com:Tianhao-Gu/ReadsAlignmentUtils.git"
+    GIT_COMMIT_HASH = "2c2092c2b793cf45b45a3e4d1d6cc7f716fceb03"
 
     #BEGIN_CLASS_HEADER
 
@@ -176,12 +176,14 @@ stored alignment.
         obj_type = self._get_ws_info(params.get(self.PARAM_IN_ASM_GEN_REF))[2]
         if obj_type.startswith('KBaseGenomes.Genome') or \
            obj_type.startswith('KBaseGenomeAnnotations.Assembly') or \
-           obj_type.startswith('KBaseGenomes.ContigSet'):
+           obj_type.startswith('KBaseGenomes.ContigSet') or \
+           obj_type.startswith('KBaseMetagenomes.AnnotatedMetagenomeAssembly'):
             pass
         else:
             raise ValueError(self.PARAM_IN_ASM_GEN_REF + ' parameter should be of type' +
                                                          ' KBaseGenomes.Genome or' +
                                                          ' KBaseGenomeAnnotations.Assembly or' +
+                                                         ' KBaseMetagenomes.AnnotatedMetagenomeAssembly or' +
                                                          ' KBaseGenomes.ContigSet')
         return ws_name_id, obj_name_id, file_path, lib_type
 
@@ -199,7 +201,7 @@ stored alignment.
         secondary_alignments = all alignments that have is_secondary tag
         properly_paired = For paired end reads, all reads that map as proper pair
 
-        
+
         """
         path, file = os.path.split(bam_file)
 
@@ -242,7 +244,7 @@ stored alignment.
                         else:
                             if alignment.is_proper_pair: #counter increase when proper pair and primary alignment
                                 properly_paired += 1
- 
+
                 if alignment.is_read2:  # second sequence of a pair
                     if alignment.is_unmapped:
                         unmapped_reads_count += 1
@@ -254,7 +256,7 @@ stored alignment.
                         else:
                             if alignment.is_proper_pair: #counter increase when proper pair and primary alignment
                                 properly_paired += 1
- 
+
             else: #process single end sequences
                 if alignment.is_unmapped:
                     unmapped_reads_count += 1
@@ -389,7 +391,7 @@ stored alignment.
 
     def upload_alignment(self, ctx, params):
         """
-        Validates and uploads the reads alignment
+        Validates and uploads the reads alignment  
                 How we compute BAM stats:
                 For each segment (line) in SAM/BAM file:
                     we take the first element as `reads_id`
@@ -629,7 +631,7 @@ stored alignment.
         """
         Wrapper function for use by in-narrative downloaders to download alignments from shock *
         :param params: instance of type "ExportParams" (* Required input
-           parameters for exporting a reads alignment string source_ref -
+           parameters for exporting a reads alignment string source_ref - 
            object reference of alignment source. The object ref is
            'ws_name_or_id/obj_name_or_id' where ws_name_or_id is the
            workspace name or id and obj_name_or_id is the object name or id

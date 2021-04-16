@@ -39,7 +39,7 @@ jobs:
         test -f "$HOME/kb_sdk_actions/bin/kb-sdk" && echo "CI files cloned"
         # Pull kb-sdk & create startup script
         docker pull kbase/kb-sdk
-       
+
         sh $GITHUB_WORKSPACE/kb_sdk_actions/bin/make_testdir && echo "Created test_local"
         test -f "test_local/test.cfg" && echo "Confirmed config exists"
 
@@ -59,4 +59,3 @@ jobs:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
         sh $GITHUB_WORKSPACE/kb_sdk_actions/bin/kb-sdk test
-        bash <(curl -s https://codecov.io/bash)

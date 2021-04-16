@@ -529,7 +529,7 @@ class ReadsAlignmentUtilsTest(unittest.TestCase):
 
         ret = self.getImpl().validate_alignment(self.ctx, params)[0]
 
-        self.assertEqual(False, ret['validated'])
+        self.assertEqual(True, ret['validated'])
 
     def test_valid_invalidate_alignment(self):
         params = {'file_path': '/kb/module/test/data/samtools/accepted_hits_invalid.sam',

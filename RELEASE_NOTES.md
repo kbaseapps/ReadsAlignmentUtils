@@ -1,6 +1,7 @@
 --Changes__
 ### Version 0.4.0
 - changed SHOCK upload in unit tests to DataFileUtil.file_to_shock()
+- add KBaseMetagenomes.AnnotatedMetagenomeAssembly as a valid assembly type
 
 ### Version 0.3.4
 - Added retry logic to _check_job to address issues with BADSTATUSCODE
